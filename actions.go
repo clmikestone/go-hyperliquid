@@ -233,6 +233,20 @@ type ApproveBuilderFeeAction struct {
 	Nonce      int64  `json:"nonce"      msgpack:"nonce"`
 }
 
+// PerpDeploySetOracleSubAction represents the setOracle sub-action within perpDeploy
+type PerpDeploySetOracleSubAction struct {
+	Dex             string     `json:"dex"             msgpack:"dex"`
+	OraclePxs       [][]string `json:"oraclePxs"       msgpack:"oraclePxs"`
+	MarkPxs         [][]string `json:"markPxs"         msgpack:"markPxs"`
+	ExternalPerpPxs [][]string `json:"externalPerpPxs" msgpack:"externalPerpPxs"`
+}
+
+// PerpDeployAction represents the perpDeploy action with setOracle sub-action
+type PerpDeployAction struct {
+	Type      string                       `json:"type"      msgpack:"type"`
+	SetOracle PerpDeploySetOracleSubAction `json:"setOracle" msgpack:"setOracle"`
+}
+
 // ConvertToMultiSigUserAction represents convert to multi-sig user action
 type ConvertToMultiSigUserAction struct {
 	Type    string `json:"type"    msgpack:"type"`

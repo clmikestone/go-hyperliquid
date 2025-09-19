@@ -1254,15 +1254,39 @@ func (e *Exchange) PerpDeployRegisterAsset(
 // PerpDeploySetOracle sets oracle for perpetual asset
 func (e *Exchange) PerpDeploySetOracle(
 	ctx context.Context,
-	asset string,
-	oracleAddress string,
-) (*SpotDeployResponse, error) {
+	dex string,
+	oraclePxs map[string]string,
+	allMarkPxs []map[string]string,
+	externalPerpPxs map[string]string,
+) (*PerpDeployResponse, error) {
 	nonce := e.nextNonce()
 
-	action := map[string]any{
-		"type":          "perpDeploySetOracle",
-		"asset":         asset,
-		"oracleAddress": oracleAddress,
+	// Convert maps to sorted key-value pairs as expected by the API
+	oraclePxsWire := make([][]string, 0, len(oraclePxs))
+	for asset, price := range oraclePxs {
+		oraclePxsWire = append(oraclePxsWire, []string{asset, price})
+	}
+
+	markPxsWire := make([][]string, 0)
+	for _, markPxs := range allMarkPxs {
+		for asset, price := range markPxs {
+			markPxsWire = append(markPxsWire, []string{asset, price})
+		}
+	}
+
+	externalPerpPxsWire := make([][]string, 0, len(externalPerpPxs))
+	for asset, price := range externalPerpPxs {
+		externalPerpPxsWire = append(externalPerpPxsWire, []string{asset, price})
+	}
+
+	action := PerpDeployAction{
+		Type: "perpDeploy",
+		SetOracle: PerpDeploySetOracleSubAction{
+			Dex:             dex,
+			OraclePxs:       oraclePxsWire,
+			MarkPxs:         markPxsWire,
+			ExternalPerpPxs: externalPerpPxsWire,
+		},
 	}
 
 	sig, err := SignL1Action(
@@ -1282,7 +1306,7 @@ func (e *Exchange) PerpDeploySetOracle(
 		return nil, err
 	}
 
-	var result SpotDeployResponse
+	var result PerpDeployResponse
 	if err := json.Unmarshal(resp, &result); err != nil {
 		return nil, err
 	}
